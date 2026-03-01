@@ -1,0 +1,40 @@
+name: Update SpeedKeno Data
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # 10분마다 (GitHub cron은 UTC 기준)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-speedkeno
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Update speedkeno data
+        run: node scripts/update_speedkeno.mjs
+
+      - name: Commit & Push (if changed)
+        run: |
+          if git diff --quiet; then
+            echo "No changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/speedkeno_draws.json data/speedkeno_freq.json
+          git commit -m "chore: update speedkeno data"
+          git push
