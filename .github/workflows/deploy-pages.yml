@@ -1,0 +1,79 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "speedkeno-c/**"
+      - "data/**"
+      - ".github/workflows/deploy-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build dist (auto-detect + safe copy)
+        run: |
+          set -e
+          rm -rf dist
+          mkdir -p dist
+          touch dist/.nojekyll
+
+          # 1) index.html 찾기
+          if [ -f "speedkeno-c/index.html" ]; then
+            INDEX="speedkeno-c/index.html"
+            SRC_DIR="speedkeno-c"
+          else
+            INDEX="$(find . -maxdepth 4 -path '*/speedkeno-c/index.html' | head -n 1)"
+            if [ -z "$INDEX" ]; then
+              echo "index.html not found" >&2
+              exit 1
+            fi
+            SRC_DIR="$(dirname "$INDEX")"
+          fi
+          cp "$INDEX" dist/index.html
+
+          # 2) data 복사
+          if [ -d "data" ]; then
+            mkdir -p dist/data
+            cp -r data/* dist/data/ || true
+          else
+            echo "WARN: data/ not found (site will show '데이터 없음')"
+          fi
+
+          # 3) assets 복사 (BGM 포함)
+          if [ -d "$SRC_DIR/assets" ]; then
+            mkdir -p dist/assets
+            cp -r "$SRC_DIR/assets/"* dist/assets/ || true
+          else
+            echo "INFO: assets/ not found - skip"
+          fi
+
+          echo "dist tree:"
+          find dist -maxdepth 3 -type f
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
