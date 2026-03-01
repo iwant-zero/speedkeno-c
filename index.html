@@ -4,158 +4,101 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <meta name="theme-color" content="#0b1220" />
-  <title>스피드키노 추천기 (데이터 기반 · 결정론)</title>
+  <title>스피드키노 추천기 (넘버스 + 숫자합 · 결정론)</title>
   <style>
     :root{
-      --bg:#0b1220; --card:#101a2e; --muted:#9fb0d0; --text:#eaf0ff;
-      --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.16);
-      --ok:#4fe3a5; --warn:#ffd166; --bad:#ff5d7a; --accent:#7aa2ff;
-      --shadow:0 14px 40px rgba(0,0,0,.35);
-      --r:18px;
-      font-synthesis-weight:none;
+      --bg:#0b1220; --card:#101a2e; --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.16);
+      --text:#eaf0ff; --muted:#9fb0d0; --ok:#4fe3a5; --warn:#ffd166; --bad:#ff5d7a;
+      --shadow:0 14px 40px rgba(0,0,0,.35); --r:18px;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
-      margin:0; background:radial-gradient(1200px 600px at 20% 0%, rgba(122,162,255,.18), transparent 60%),
-               radial-gradient(900px 500px at 80% 10%, rgba(79,227,165,.10), transparent 55%),
-               var(--bg);
-      color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif;
-    }
-    a{color:inherit}
-    .wrap{max-width:1100px; margin:0 auto; padding:18px;}
-    header{
-      display:flex; gap:12px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap;
-      margin-bottom:14px;
-    }
-    .title{display:flex; flex-direction:column; gap:6px;}
-    .title h1{margin:0; font-size:20px; letter-spacing:.2px;}
-    .title .sub{color:var(--muted); font-size:13px; line-height:1.35;}
-    .pill{
-      display:inline-flex; align-items:center; gap:8px; padding:8px 10px;
-      border:1px solid var(--line); background:rgba(16,26,46,.65);
-      border-radius:999px; box-shadow:var(--shadow);
-      font-size:12px; color:var(--muted);
-    }
-    .grid{
-      display:grid; gap:12px;
-      grid-template-columns: 1.1fr .9fr;
-    }
-    @media (max-width: 980px){
-      .grid{grid-template-columns:1fr}
-    }
-    .card{
-      background:rgba(16,26,46,.78);
-      border:1px solid var(--line);
-      border-radius:var(--r);
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-    .card .hd{
-      padding:12px 12px 10px;
-      border-bottom:1px solid var(--line);
-      display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
-    }
-    .card .hd .h{
-      font-weight:700; font-size:14px;
-    }
-    .card .bd{padding:12px}
-    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-    .row > *{flex:0 0 auto}
-    .btn{
-      border:1px solid var(--line2);
-      background:rgba(122,162,255,.12);
+      margin:0;
+      background:radial-gradient(1200px 600px at 20% 0%, rgba(122,162,255,.18), transparent 60%),
+                 radial-gradient(900px 500px at 80% 10%, rgba(79,227,165,.10), transparent 55%),
+                 var(--bg);
       color:var(--text);
-      padding:10px 12px;
-      border-radius:12px;
-      cursor:pointer;
-      font-weight:650;
-      letter-spacing:.2px;
-      transition:.12s transform ease, .12s background ease;
-      user-select:none;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif;
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:18px}
+    header{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}
+    h1{margin:0;font-size:20px}
+    .sub{color:var(--muted);font-size:13px;line-height:1.35;margin-top:6px}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);background:rgba(16,26,46,.65);
+      border-radius:999px;box-shadow:var(--shadow);font-size:12px;color:var(--muted)}
+    .grid{display:grid;gap:12px;grid-template-columns:1.1fr .9fr}
+    @media (max-width:980px){.grid{grid-template-columns:1fr}}
+    .card{background:rgba(16,26,46,.78);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+    .hd{padding:12px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .h{font-weight:800;font-size:14px}
+    .bd{padding:12px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .btn{
+      border:1px solid var(--line2);background:rgba(122,162,255,.12);color:var(--text);
+      padding:10px 12px;border-radius:12px;cursor:pointer;font-weight:750;letter-spacing:.2px;
+      transition:.12s transform ease,.12s background ease;user-select:none;
     }
     .btn:active{transform:scale(.98)}
-    .btn.primary{background:rgba(79,227,165,.14); border-color:rgba(79,227,165,.25)}
+    .btn.primary{background:rgba(79,227,165,.14);border-color:rgba(79,227,165,.25)}
+    .btn.small{padding:8px 10px;font-size:12px;border-radius:10px}
     .btn.ghost{background:transparent}
-    .btn.small{padding:8px 10px; font-size:12px; border-radius:10px}
-    .btn.danger{background:rgba(255,93,122,.14); border-color:rgba(255,93,122,.25)}
-    .tabs{display:flex; gap:8px; flex-wrap:wrap}
-    .tab{
-      padding:8px 10px; border-radius:999px; border:1px solid var(--line2);
-      background:transparent; cursor:pointer; font-size:12px; color:var(--muted);
+    .btn.danger{background:rgba(255,93,122,.14);border-color:rgba(255,93,122,.25)}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tab{padding:8px 10px;border-radius:999px;border:1px solid var(--line2);background:transparent;cursor:pointer;font-size:12px;color:var(--muted)}
+    .tab.on{background:rgba(122,162,255,.18);color:var(--text)}
+    label{font-size:12px;color:var(--muted)}
+    input[type="text"],input[type="number"],select{
+      background:rgba(0,0,0,.20);border:1px solid var(--line2);color:var(--text);
+      border-radius:12px;padding:10px 10px;outline:none;min-width:180px;
     }
-    .tab.on{background:rgba(122,162,255,.18); color:var(--text)}
-    label{font-size:12px; color:var(--muted)}
-    input[type="text"], input[type="number"], select{
-      background:rgba(0,0,0,.20);
-      border:1px solid var(--line2);
-      color:var(--text);
-      border-radius:12px;
-      padding:10px 10px;
-      outline:none;
-      min-width:180px;
-    }
-    input[type="range"]{width:min(320px, 70vw)}
-    .kv{display:grid; grid-template-columns: 120px 1fr; gap:8px 10px; align-items:center}
-    @media (max-width:520px){
-      .kv{grid-template-columns:1fr}
-      input[type="text"], select{min-width:0; width:100%}
-    }
+    input[type="range"]{width:min(320px,70vw)}
+    .kv{display:grid;grid-template-columns:120px 1fr;gap:8px 10px;align-items:center}
+    @media (max-width:520px){.kv{grid-template-columns:1fr} input[type="text"],select{min-width:0;width:100%}}
     .muted{color:var(--muted)}
-    .sep{height:1px; background:var(--line); margin:10px 0}
-    .results{display:flex; flex-direction:column; gap:10px}
-    .set{
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px;
-      background:rgba(0,0,0,.16);
-    }
-    .set .meta{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; color:var(--muted); font-size:12px}
-    .balls{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+    .sep{height:1px;background:var(--line);margin:10px 0}
+    .results{display:flex;flex-direction:column;gap:10px}
+    .set{border:1px solid var(--line);border-radius:14px;padding:10px;background:rgba(0,0,0,.16)}
+    .meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:12px}
+    .balls{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
     .ball{
-      width:38px; height:38px; border-radius:999px;
-      display:flex; align-items:center; justify-content:center;
-      font-weight:800;
-      border:1px solid rgba(255,255,255,.22);
-      box-shadow: 0 10px 22px rgba(0,0,0,.35) inset, 0 6px 18px rgba(0,0,0,.20);
-      letter-spacing:.2px;
-      user-select:none;
+      width:38px;height:38px;border-radius:999px;display:flex;align-items:center;justify-content:center;
+      font-weight:900;border:1px solid rgba(255,255,255,.22);
+      box-shadow:0 10px 22px rgba(0,0,0,.35) inset,0 6px 18px rgba(0,0,0,.20);
+      letter-spacing:.2px;user-select:none;
     }
-    .sumBox{
-      margin-top:10px; padding:10px; border-radius:12px;
-      border:1px dashed rgba(255,255,255,.18);
-      color:var(--muted); font-size:12px;
+    .sumCard{
+      margin-top:10px;padding:12px;border-radius:14px;border:1px dashed rgba(255,255,255,.18);
+      background:rgba(0,0,0,.18)
     }
-    .histItem{
-      padding:10px; border-radius:14px; border:1px solid var(--line);
-      background:rgba(0,0,0,.14);
-    }
-    .histItem .t{display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; font-size:12px; color:var(--muted)}
-    .footnote{font-size:12px; color:var(--muted); line-height:1.5}
-    .right{justify-content:flex-end}
+    .sumBig{font-size:18px;font-weight:900}
+    .footnote{font-size:12px;color:var(--muted);line-height:1.5}
+    .histItem{padding:10px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.14)}
+    .histItem .t{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <div class="title">
-        <h1>스피드키노 추천기 (데이터 기반 · 결정론)</h1>
+      <div>
+        <h1>스피드키노 추천기 (결정론)</h1>
         <div class="sub">
-          무작위 0% · <b>cycle + 기기 seed + 사용자 seed + 밴드 분산</b>으로 반복을 최대한 늦추는 구조.<br/>
-          “넘버스 게임(번호 추천)” + “숫자합 게임(합 구간 추천)” 2가지 제공.
+          ✅ <b>넘버스(숫자선택)</b>: 1~70 중 <b>2~10개</b> 선택 → 추첨 22개 안에 몇 개 들어가냐로 등수<br/>
+          ✅ <b>숫자합(구간)</b>: 추첨 22개 <b>합(sum)</b>이 9구간 중 어디냐 선택<br/>
+          ✅ 무작위 0% · <b>데이터 + cycle + 기기seed + 사용자seed + 밴드분산</b>
         </div>
       </div>
       <div class="pill" id="statusPill">데이터 로딩중…</div>
     </header>
 
     <div class="grid">
-      <!-- LEFT: controls -->
+      <!-- Controls -->
       <section class="card">
         <div class="hd">
           <div class="h">추천 설정</div>
-          <div class="tabs" aria-label="game tabs">
-            <button class="tab on" id="tabNumbers">넘버스 게임</button>
-            <button class="tab" id="tabSum">숫자합 게임</button>
+          <div class="tabs">
+            <button class="tab on" id="tabNumbers">넘버스(숫자선택)</button>
+            <button class="tab" id="tabSum">숫자합(구간)</button>
           </div>
         </div>
         <div class="bd">
@@ -194,6 +137,22 @@
               <span class="muted" id="spreadLabel">70</span>
             </div>
 
+            <label>넘버스 Pick</label>
+            <div class="row">
+              <select id="pickSel">
+                <option value="10">Pick10</option>
+                <option value="9">Pick9</option>
+                <option value="8">Pick8</option>
+                <option value="7">Pick7</option>
+                <option value="6">Pick6</option>
+                <option value="5">Pick5</option>
+                <option value="4">Pick4</option>
+                <option value="3">Pick3</option>
+                <option value="2">Pick2</option>
+              </select>
+              <span class="muted" id="pickHint">넘버스 게임에서만 사용</span>
+            </div>
+
             <label>밴드 프리셋</label>
             <div class="row">
               <select id="presetSel">
@@ -203,22 +162,6 @@
                 <option value="low">low (하위 비중↑)</option>
               </select>
               <span class="muted" id="presetHint"></span>
-            </div>
-
-            <label>픽 개수(넘버스)</label>
-            <div class="row">
-              <select id="pickSel">
-                <option value="10">10개</option>
-                <option value="9">9개</option>
-                <option value="8">8개</option>
-                <option value="7">7개</option>
-                <option value="6">6개</option>
-                <option value="5">5개</option>
-                <option value="4">4개</option>
-                <option value="3">3개</option>
-                <option value="2">2개</option>
-              </select>
-              <span class="muted">* 숫자합 게임은 “합 구간” 추천</span>
             </div>
           </div>
 
@@ -236,17 +179,17 @@
           <div class="footnote" id="dataInfo">
             데이터: <code>data/speedkeno_draws.json</code><br/>
             업데이트: GitHub Actions로 주기 갱신<br/>
-            참고: 과거 빈도 기반 추천은 당첨 보장이 아닙니다.
+            숫자합 게임: <b>253-486</b>, <b>487-512</b> 구간은 <b>1회 1매 제한</b>(추천도 그 제한을 지킴)
           </div>
         </div>
       </section>
 
-      <!-- RIGHT: BGM + quick -->
+      <!-- BGM -->
       <section class="card">
         <div class="hd">
           <div class="h">BGM</div>
-          <div class="row right">
-            <button class="btn small" id="bgmToggle">ON/OFF</button>
+          <div class="row">
+            <button class="btn small" id="bgmToggle">BGM: OFF</button>
           </div>
         </div>
         <div class="bd">
@@ -266,8 +209,8 @@
           </div>
           <div class="sep"></div>
           <div class="footnote">
-            <code>speedkeno-c/assets/bgm/</code> 안에 <b>track1~track50</b> 파일을 넣으면 자동 탐색합니다.<br/>
-            (mp3/mp4/m4a/ogg/wav 지원, ON/OFF/볼륨/선택 트랙 저장)
+            <code>speedkeno-c/assets/bgm/</code> 안에 <b>track1~track50</b> 파일을 넣으면 자동 탐색.<br/>
+            (mp3/mp4/m4a/ogg/wav 지원, ON/OFF/볼륨/선택트랙 저장)
           </div>
           <audio id="bgmAudio" preload="none" loop></audio>
         </div>
@@ -278,7 +221,7 @@
       <section class="card">
         <div class="hd">
           <div class="h">추천 결과</div>
-          <div class="muted" id="modeLabel">넘버스 게임 모드</div>
+          <div class="muted" id="modeLabel">넘버스(숫자선택) 모드</div>
         </div>
         <div class="bd">
           <div class="results" id="results"></div>
@@ -298,7 +241,7 @@
   </div>
 
 <script>
-  // ---------- localStorage keys ----------
+  // ---------------- storage keys ----------------
   const LS = {
     seed: "sk_seed",
     cycle: "sk_cycle",
@@ -310,12 +253,39 @@
     preset: "sk_preset",
     pick: "sk_pick",
     hist: "sk_hist",
+    mode: "sk_mode",
     bgmOn: "bgm_enabled",
     bgmVol: "bgm_volume",
     bgmTrack: "bgm_track"
   };
 
-  // ---------- deterministic PRNG (no Math.random) ----------
+  // ---------------- sum bins (9) ----------------
+  const SUM_BINS = [
+    { key:"b1", min:253, max:486, label:"253-486", limited1PerDraw:true },
+    { key:"b2", min:487, max:512, label:"487-512", limited1PerDraw:true },
+    { key:"b3", min:513, max:568, label:"513-568" },
+    { key:"b4", min:569, max:594, label:"569-594" },
+    { key:"b5", min:595, max:663, label:"595-663" },
+    { key:"b6", min:664, max:700, label:"664-700" },
+    { key:"b7", min:701, max:740, label:"701-740" },
+    { key:"b8", min:741, max:803, label:"741-803" },
+    { key:"b9", min:804, max:1309, label:"804-1309" }
+  ];
+  function sumToBin(sum){
+    for(const b of SUM_BINS){
+      if(sum>=b.min && sum<=b.max) return b.key;
+    }
+    if(sum < SUM_BINS[0].min) return SUM_BINS[0].key;
+    return SUM_BINS[SUM_BINS.length-1].key;
+  }
+  function binLabel(bin){
+    return (SUM_BINS.find(x=>x.key===bin)?.label) || bin;
+  }
+  function isLimitedBin(bin){
+    return !!SUM_BINS.find(x=>x.key===bin)?.limited1PerDraw;
+  }
+
+  // ---------------- deterministic PRNG (no Math.random) ----------------
   function fnv1a32(str){
     let h = 0x811c9dc5;
     for(let i=0;i<str.length;i++){
@@ -340,13 +310,12 @@
     };
   }
 
-  // ---------- helpers ----------
+  // ---------------- helpers ----------------
   const $ = (id)=>document.getElementById(id);
   const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
   const pad2 = (n)=>String(n).padStart(2,"0");
 
   function numColor(n){
-    // 1~70 컬러볼(취향껏)
     if(n<=10) return "linear-gradient(180deg,#ffd166,#b78b1d)";
     if(n<=20) return "linear-gradient(180deg,#7aa2ff,#2f4fb8)";
     if(n<=30) return "linear-gradient(180deg,#ff5d7a,#a91f39)";
@@ -356,55 +325,59 @@
     return "linear-gradient(180deg,#ffb86b,#b25b11)";
   }
 
-  // sum bins for "숫자합 게임"
-  function sumToBin(sum){
-    if(sum<=649) return "b1";
-    if(sum<=699) return "b2";
-    if(sum<=749) return "b3";
-    if(sum<=799) return "b4";
-    if(sum<=849) return "b5";
-    return "b6";
+  function deviceSeed(){
+    const s = [
+      navigator.userAgent,
+      navigator.language,
+      String(screen.width)+"x"+String(screen.height),
+      String(screen.colorDepth),
+      String(Intl.DateTimeFormat().resolvedOptions().timeZone || "tz"),
+      String(new Date().getTimezoneOffset()),
+      navigator.platform
+    ].join("|");
+    return String(fnv1a32(s));
   }
-  function binLabel(bin){
-    return ({
-      b1:"≤649",
-      b2:"650~699",
-      b3:"700~749",
-      b4:"750~799",
-      b5:"800~849",
-      b6:"≥850"
-    })[bin]||bin;
+
+  function setStatus(ok, text){
+    const p = $("statusPill");
+    p.textContent = text;
+    p.style.borderColor = ok ? "rgba(79,227,165,.25)" : "rgba(255,93,122,.25)";
+    p.style.color = ok ? "var(--ok)" : "var(--warn)";
   }
 
   function makeEmptyFreq(){
-    const n={}, l={};
+    const n={}, l={}, sb={};
     for(let i=1;i<=70;i++){ n[i]=0; l[i]=0; }
-    return { numberFreq:n, luckyFreq:l };
+    for(const b of SUM_BINS) sb[b.key]=0;
+    return { numberFreq:n, luckyFreq:l, sumBinFreq:sb };
   }
+
   function computeFreqShallow(draws){
     const base = makeEmptyFreq();
-    const sumBin = {b1:0,b2:0,b3:0,b4:0,b5:0,b6:0};
     for(const d of draws){
-      for(const x of d.numbers||[]) if(x>=1&&x<=70) base.numberFreq[x]+=1;
+      for(const x of (d.numbers||[])) if(x>=1&&x<=70) base.numberFreq[x]+=1;
       if((d.lucky||0)>=1 && d.lucky<=70) base.luckyFreq[d.lucky]+=1;
       if(Number.isFinite(d.sum)){
-        sumBin[sumToBin(d.sum)] += 1;
+        base.sumBinFreq[sumToBin(d.sum)] += 1;
       }
     }
-    return { ...base, sumBin };
+    return base;
   }
+
   function blendScore(allFreq, recentFreq, w01){
     let aT=0, rT=0;
-    for(let i=1;i<=70;i++){ aT += (allFreq[i]||0); rT += (recentFreq[i]||0); }
-    const out={};
-    for(let i=1;i<=70;i++){
-      const a = aT ? (allFreq[i]||0)/aT : 0;
-      const r = rT ? (recentFreq[i]||0)/rT : 0;
-      out[i] = (1-w01)*a + w01*r;
+    for(const k in allFreq) aT += (allFreq[k]||0);
+    for(const k in recentFreq) rT += (recentFreq[k]||0);
+    const out = {};
+    for(const k in allFreq){
+      const a = aT ? (allFreq[k]||0)/aT : 0;
+      const r = rT ? (recentFreq[k]||0)/rT : 0;
+      out[k] = (1-w01)*a + w01*r;
     }
     return out;
   }
-  function rankByScore(scoreObj){
+
+  function rankNumbersByScore(scoreObj){
     const arr = Array.from({length:70},(_,i)=>i+1);
     arr.sort((a,b)=>{
       const da=scoreObj[a]||0, db=scoreObj[b]||0;
@@ -413,6 +386,17 @@
     });
     return arr;
   }
+
+  function rankKeysByScore(scoreObj){
+    const keys = Object.keys(scoreObj);
+    keys.sort((a,b)=>{
+      const da=scoreObj[a]||0, db=scoreObj[b]||0;
+      if(db!==da) return db-da;
+      return String(a).localeCompare(String(b));
+    });
+    return keys;
+  }
+
   function makePickPlan(pickTotal, preset){
     const base = ({
       balanced:[4,3,3],
@@ -429,21 +413,23 @@
     while(h+m+l<pickTotal) l++;
     return [h,m,l];
   }
+
   function pickFromBand(bandArr, pickCount, spread01, prng){
     const minFrac = 0.2;
     const frac = minFrac + (1-minFrac)*spread01;
     const allowed = Math.max(1, Math.floor(bandArr.length * frac));
     const pool = bandArr.slice(0, allowed);
     for(let i=0;i<Math.min(pickCount,pool.length);i++){
-      const j = i + prng.nextInt(pool.length - i);
-      const tmp=pool[i]; pool[i]=pool[j]; pool[j]=tmp;
+      const j = i + prng.nextInt(pool.length-i);
+      [pool[i],pool[j]]=[pool[j],pool[i]];
     }
-    return pool.slice(0, pickCount);
+    return pool.slice(0,pickCount);
   }
-  function recommendNumberSet({ ranked, pickTotal, preset, spread01, seedStr }){
-    const high = ranked.slice(0,20);
-    const mid  = ranked.slice(20,40);
-    const low  = ranked.slice(40);
+
+  function recommendNumberSet({ rankedNums, pickTotal, preset, spread01, seedStr }){
+    const high = rankedNums.slice(0,20);
+    const mid  = rankedNums.slice(20,40);
+    const low  = rankedNums.slice(40);
 
     const prng = makeXorShift32(fnv1a32(seedStr));
     const [hCnt,mCnt,lCnt] = makePickPlan(pickTotal, preset);
@@ -453,12 +439,11 @@
       ...pickFromBand(mid,  mCnt, spread01, prng),
       ...pickFromBand(low,  lCnt, spread01, prng)
     ];
-    let uniq = Array.from(new Set(picks)).slice(0, pickTotal);
-    uniq.sort((a,b)=>a-b);
+    let uniq = Array.from(new Set(picks)).slice(0,pickTotal).sort((a,b)=>a-b);
 
     if(uniq.length<pickTotal){
       const pr2 = makeXorShift32(fnv1a32(seedStr+"|fill"));
-      const pool = ranked.slice();
+      const pool = rankedNums.slice();
       for(let i=0;i<pool.length && uniq.length<pickTotal;i++){
         const j = i + pr2.nextInt(pool.length-i);
         [pool[i],pool[j]]=[pool[j],pool[i]];
@@ -469,125 +454,75 @@
 
     return { numbers: uniq, band:{high:hCnt,mid:mCnt,low:lCnt} };
   }
-  function recommendSumGame({ sumBinAll, sumBinRecent, w01, seedStr }){
-    const bins = ["b1","b2","b3","b4","b5","b6"];
-    const aT = bins.reduce((s,k)=>s+(sumBinAll[k]||0),0);
-    const rT = bins.reduce((s,k)=>s+(sumBinRecent[k]||0),0);
 
-    const score = {};
-    for(const b of bins){
-      const a = aT ? (sumBinAll[b]||0)/aT : 0;
-      const r = rT ? (sumBinRecent[b]||0)/rT : 0;
-      score[b] = (1-w01)*a + w01*r;
-    }
-    bins.sort((x,y)=>{
-      if(score[y]!==score[x]) return score[y]-score[x];
-      return x.localeCompare(y);
-    });
+  function recommendSumTicket({ rankedBins, spread01, seedStr, usedLimited }){
+    const top = rankedBins.slice(0,3);
+    const mid = rankedBins.slice(3,6);
+    const low = rankedBins.slice(6,9);
 
     const prng = makeXorShift32(fnv1a32(seedStr+"|sum"));
-    const top=bins.slice(0,2), mid=bins.slice(2,4), low=bins.slice(4);
-    const g = prng.nextInt(3);
-    let chosen = g===0 ? top[prng.nextInt(top.length)]
-                : g===1 ? mid[prng.nextInt(mid.length)]
-                : low[prng.nextInt(low.length)];
-    return { bin:chosen, label:binLabel(chosen), rank:bins };
+    const group = prng.nextInt(3);
+    const band = group===0 ? top : (group===1 ? mid : low);
+
+    const pickOne = (arr)=>{
+      const minFrac=0.35;
+      const frac = minFrac + (1-minFrac)*spread01;
+      const allowed = Math.max(1, Math.floor(arr.length*frac));
+      return arr[prng.nextInt(allowed)];
+    };
+
+    let chosen = pickOne(band);
+
+    if(isLimitedBin(chosen) && usedLimited.has(chosen)){
+      for(const k of rankedBins){
+        if(!isLimitedBin(k) || !usedLimited.has(k)){ chosen=k; break; }
+      }
+    }
+    if(isLimitedBin(chosen)) usedLimited.add(chosen);
+
+    return { bin: chosen, label: binLabel(chosen) };
   }
 
-  function deviceSeed(){
-    // 개인정보 수집 목적 X: 동일 기기에서 “대충 안정적인” seed
-    const s = [
-      navigator.userAgent,
-      navigator.language,
-      String(screen.width)+"x"+String(screen.height),
-      String(screen.colorDepth),
-      String(Intl.DateTimeFormat().resolvedOptions().timeZone || "tz"),
-      String(new Date().getTimezoneOffset()),
-      navigator.platform
-    ].join("|");
-    return String(fnv1a32(s));
-  }
-
-  // ---------- app state ----------
-  let mode = "numbers"; // "numbers" or "sum"
+  // ---------------- state ----------------
+  let mode = (localStorage.getItem(LS.mode)||"numbers"); // numbers|sum
   let draws = [];
   let allFreq = null;
 
-  function loadStateFromUrl(){
-    const u = new URL(location.href);
-    const seed = u.searchParams.get("seed");
-    const cycle = u.searchParams.get("cycle");
-    const recent = u.searchParams.get("recent");
-    const w = u.searchParams.get("w");
-    const spread = u.searchParams.get("spread");
-    const preset = u.searchParams.get("preset");
-    const pick = u.searchParams.get("pick");
-
-    if(seed) localStorage.setItem(LS.seed, seed);
-    if(cycle) localStorage.setItem(LS.cycle, String(parseInt(cycle,10)||0));
-    if(recent && ["10","20","30"].includes(recent)) localStorage.setItem(LS.recentN, recent);
-    if(w) localStorage.setItem(LS.w, String(clamp(parseInt(w,10)||60,0,100)));
-    if(spread) localStorage.setItem(LS.spread, String(clamp(parseInt(spread,10)||70,0,100)));
-    if(preset && ["balanced","high","spread","low"].includes(preset)) localStorage.setItem(LS.preset, preset);
-    if(pick && ["2","3","4","5","6","7","8","9","10"].includes(pick)) localStorage.setItem(LS.pick, pick);
-  }
-
-  function setStatus(ok, text){
-    const p = $("statusPill");
-    p.textContent = text;
-    p.style.borderColor = ok ? "rgba(79,227,165,.25)" : "rgba(255,93,122,.25)";
-    p.style.color = ok ? "var(--ok)" : "var(--warn)";
-  }
-
-  function updatePresetHint(){
-    const p = $("presetSel").value;
-    const pick = parseInt($("pickSel").value,10);
-    const plan = makePickPlan(pick, p);
-    $("presetHint").textContent = `밴드비율: 상${plan[0]}/중${plan[1]}/하${plan[2]}`;
-  }
-
-  function setRecentTab(n){
-    localStorage.setItem(LS.recentN, String(n));
-    ["10","20","30"].forEach(k=>{
-      $("recent"+k).classList.toggle("on", String(n)===k);
-    });
-  }
-
   function getRecentN(){ return parseInt(localStorage.getItem(LS.recentN)||"30",10); }
+  function setRecentTab(n){
+    localStorage.setItem(LS.recentN,String(n));
+    ["10","20","30"].forEach(k=> $("recent"+k).classList.toggle("on", String(n)===k));
+  }
   function getW(){ return clamp(parseInt(localStorage.getItem(LS.w)||"60",10),0,100); }
   function getSpread(){ return clamp(parseInt(localStorage.getItem(LS.spread)||"70",10),0,100); }
   function getPreset(){ return localStorage.getItem(LS.preset)||"balanced"; }
   function getPick(){ return parseInt(localStorage.getItem(LS.pick)||"10",10); }
 
-  function getSeed(){
-    return ($("seedInput").value||"").trim() || "TEAM";
-  }
-  function getCycle(){
-    return parseInt($("cycleInput").value||"0",10) || 0;
-  }
+  function getSeed(){ return ($("seedInput").value||"").trim() || "TEAM"; }
+  function getCycle(){ return parseInt($("cycleInput").value||"0",10)||0; }
   function setCycle(v){
     $("cycleInput").value = String(Math.max(0, v|0));
     localStorage.setItem(LS.cycle, $("cycleInput").value);
   }
 
-  function getViewOffset(){
-    return parseInt(localStorage.getItem(LS.view)||"0",10) || 0;
-  }
+  function getViewOffset(){ return parseInt(localStorage.getItem(LS.view)||"0",10)||0; }
   function bumpViewOffset(){
     const v = getViewOffset()+1;
-    localStorage.setItem(LS.view, String(v));
+    localStorage.setItem(LS.view,String(v));
     return v;
-  }
-  function resetViewOffset(){
-    localStorage.setItem(LS.view, "0");
   }
 
   function setLastCnt(n){
-    localStorage.setItem(LS.lastCnt, String(n));
+    localStorage.setItem(LS.lastCnt,String(n));
     $("lastInfo").textContent = `lastCnt=${n}, viewOffset=${getViewOffset()}`;
   }
-  function getLastCnt(){
-    return parseInt(localStorage.getItem(LS.lastCnt)||"5",10) || 5;
+  function getLastCnt(){ return parseInt(localStorage.getItem(LS.lastCnt)||"5",10)||5; }
+
+  function updatePresetHint(){
+    const p = $("presetSel").value;
+    const pick = parseInt($("pickSel").value,10);
+    const plan = makePickPlan(pick,p);
+    $("presetHint").textContent = `밴드비율: 상${plan[0]}/중${plan[1]}/하${plan[2]}`;
   }
 
   function pushHistory(item){
@@ -597,7 +532,6 @@
     localStorage.setItem(LS.hist, JSON.stringify(arr));
     renderHistory();
   }
-
   function renderHistory(){
     const box = $("history");
     const arr = JSON.parse(localStorage.getItem(LS.hist)||"[]");
@@ -610,9 +544,9 @@
         <div class="histItem">
           <div class="t">
             <div>${h.time}</div>
-            <div>cycle=${h.cycle} · cnt=${h.cnt} · seed=${h.seed}</div>
+            <div>mode=${h.mode} · cycle=${h.cycle} · cnt=${h.cnt} · seed=${h.seed}</div>
           </div>
-          <div class="muted" style="margin-top:6px">${h.mode==="numbers"?"넘버스":"숫자합"} · recent=${h.recent} · w=${h.w} · spread=${h.spread} · preset=${h.preset} · pick=${h.pick}</div>
+          <div class="muted" style="margin-top:6px">recent=${h.recent} · w=${h.w} · spread=${h.spread} · preset=${h.preset} · pick=${h.pick}</div>
         </div>
       `;
     }).join("");
@@ -624,40 +558,57 @@
       box.innerHTML = `<div class="muted">추천 결과가 없습니다.</div>`;
       return;
     }
-    box.innerHTML = sets.map((s, idx)=>{
-      const balls = (s.numbers||[]).map(n=>{
-        return `<div class="ball" style="background:${numColor(n)}">${pad2(n)}</div>`;
+
+    if(mode==="numbers"){
+      box.innerHTML = sets.map((s, idx)=>{
+        const balls = (s.numbers||[]).map(n=> `<div class="ball" style="background:${numColor(n)}">${pad2(n)}</div>`).join("");
+        return `
+          <div class="set">
+            <div class="meta">
+              <div><b>#${String(idx+1).padStart(2,"0")}</b> · Pick${cfg.pick} · 밴드 상${s.band.high}/중${s.band.mid}/하${s.band.low}</div>
+              <div>cycle=${cfg.cycle} · view=${cfg.viewOffset} · recent=${cfg.recentN} · w=${cfg.w} · spread=${cfg.spread}</div>
+            </div>
+            <div class="balls">${balls}</div>
+          </div>
+        `;
       }).join("");
+      return;
+    }
 
-      const sumLine = s.sumRec ? `
-        <div class="sumBox">
-          <b>숫자합 추천</b> : 구간 <b>${s.sumRec.label}</b> (bin=${s.sumRec.bin})
-        </div>
-      ` : "";
-
+    // sum mode
+    box.innerHTML = sets.map((s, idx)=>{
+      const warn = (s.bin==="b1"||s.bin==="b2") ? `<div class="muted" style="margin-top:6px">⚠️ 1등/2등 구간은 1회 1매 제한</div>` : "";
       return `
         <div class="set">
           <div class="meta">
-            <div><b>#${String(idx+1).padStart(2,"0")}</b> · 밴드 상${s.band.high}/중${s.band.mid}/하${s.band.low}</div>
-            <div class="muted">cycle=${cfg.cycle} · view=${cfg.viewOffset} · recent=${cfg.recentN} · w=${cfg.w} · spread=${cfg.spread}</div>
+            <div><b>#${String(idx+1).padStart(2,"0")}</b> · 숫자합 구간</div>
+            <div>cycle=${cfg.cycle} · view=${cfg.viewOffset} · recent=${cfg.recentN} · w=${cfg.w} · spread=${cfg.spread}</div>
           </div>
-          <div class="balls">${balls}</div>
-          ${sumLine}
+          <div class="sumCard">
+            <div class="sumBig">${s.label}</div>
+            <div class="muted">bin=${s.bin}</div>
+            ${warn}
+          </div>
         </div>
       `;
     }).join("");
   }
 
-  function computeAllFreq(){
-    // draws가 ascending이라고 가정 (Actions script도 그렇게 저장)
-    const base = makeEmptyFreq();
-    const sumBin = {b1:0,b2:0,b3:0,b4:0,b5:0,b6:0};
-    for(const d of draws){
-      for(const x of d.numbers||[]) if(x>=1&&x<=70) base.numberFreq[x]+=1;
-      if((d.lucky||0)>=1 && d.lucky<=70) base.luckyFreq[d.lucky]+=1;
-      if(Number.isFinite(d.sum)) sumBin[sumToBin(d.sum)] += 1;
+  function applyModeUI(){
+    if(mode==="numbers"){
+      $("tabNumbers").classList.add("on");
+      $("tabSum").classList.remove("on");
+      $("modeLabel").textContent = "넘버스(숫자선택) 모드";
+      $("pickSel").disabled = false;
+      $("pickHint").textContent = "넘버스 게임: 2~10개 선택";
+    } else {
+      $("tabSum").classList.add("on");
+      $("tabNumbers").classList.remove("on");
+      $("modeLabel").textContent = "숫자합(구간) 모드";
+      $("pickSel").disabled = true;
+      $("pickHint").textContent = "숫자합 게임은 구간 선택";
     }
-    return { ...base, sumBin };
+    localStorage.setItem(LS.mode, mode);
   }
 
   function recommend(cnt){
@@ -679,54 +630,71 @@
     const w01 = w/100;
     const spread01 = spread/100;
 
-    // recent slice
     const recentDraws = draws.slice(Math.max(0, draws.length - recentN));
     const recentFreq = computeFreqShallow(recentDraws);
 
-    // number ranking
-    const scoreNum = blendScore(allFreq.numberFreq, recentFreq.numberFreq, w01);
-    const rankedNum = rankByScore(scoreNum);
-
-    // sum bins
-    const sumRecFn = (seedStr)=>recommendSumGame({
-      sumBinAll: allFreq.sumBin,
-      sumBinRecent: recentFreq.sumBin,
-      w01,
-      seedStr
-    });
-
-    const baseSeed = `${dev}|${seedUser}|recent=${recentN}|w=${w}|spread=${spread}|preset=${preset}|pick=${pick}|mode=${mode}`;
+    const baseSeed = `${dev}|${seedUser}|mode=${mode}|recent=${recentN}|w=${w}|spread=${spread}|preset=${preset}|pick=${pick}`;
 
     const sets = [];
     const seen = new Set();
-    for(let i=0;i<cnt;i++){
-      let v = viewOffset;
-      let chosen = null;
+    const usedLimited = new Set(); // b1/b2 1회 1매 제한
 
-      while(v < viewOffset + 200){
-        const seedStr = `${baseSeed}|cycle=${cycle+i}|view=${v}`;
-        const s = recommendNumberSet({ ranked: rankedNum, pickTotal: pick, preset, spread01, seedStr });
-        const k = s.numbers.join(",");
-        if(!seen.has(k)){
-          seen.add(k);
-          chosen = s;
-          if(mode==="sum"){
-            chosen.sumRec = sumRecFn(seedStr);
-          } else {
-            // numbers 모드에서도 “숫자합 게임 같이 보고 싶다”를 위해 같이 달아둠(원하면 지워도 됨)
-            chosen.sumRec = sumRecFn(seedStr);
+    if(mode==="numbers"){
+      const scoreNum = blendScore(allFreq.numberFreq, recentFreq.numberFreq, w01);
+      const rankedNums = rankNumbersByScore(scoreNum);
+
+      for(let i=0;i<cnt;i++){
+        let v = viewOffset;
+        let chosen=null;
+
+        while(v < viewOffset + 300){
+          const seedStr = `${baseSeed}|cycle=${cycle+i}|view=${v}`;
+          const s = recommendNumberSet({ rankedNums, pickTotal: pick, preset, spread01, seedStr });
+          const k = s.numbers.join(",");
+          if(!seen.has(k)){
+            seen.add(k);
+            chosen=s;
+            break;
           }
-          break;
+          v++;
         }
-        v++;
+        if(chosen) sets.push(chosen);
       }
-      if(chosen) sets.push(chosen);
+    } else {
+      const scoreBin = blendScore(allFreq.sumBinFreq, recentFreq.sumBinFreq, w01);
+      const rankedBins = rankKeysByScore(scoreBin);
+
+      for(let i=0;i<cnt;i++){
+        let v = viewOffset;
+        let chosen=null;
+
+        while(v < viewOffset + 300){
+          const seedStr = `${baseSeed}|cycle=${cycle+i}|view=${v}`;
+          const t = recommendSumTicket({ rankedBins, spread01, seedStr, usedLimited });
+
+          const k = t.bin + "|" + v;
+          // 같은 bin이 너무 연속 반복되면 view로 회피
+          if(!seen.has(t.bin) || rankedBins.length < cnt){
+            chosen=t;
+            break;
+          }
+          // b1/b2는 제한 때문에 더더욱 반복 회피
+          if((t.bin==="b1"||t.bin==="b2") && usedLimited.has(t.bin)) { v++; continue; }
+
+          v++;
+        }
+        if(!chosen){
+          // fallback
+          chosen = recommendSumTicket({ rankedBins, spread01, seedStr: `${baseSeed}|cycle=${cycle+i}|view=${viewOffset+999}`, usedLimited });
+        }
+        sets.push(chosen);
+        seen.add(chosen.bin);
+      }
     }
 
-    renderResults(sets, {cycle,viewOffset,recentN,w,spread});
+    renderResults(sets, {cycle,viewOffset,recentN,w,spread,preset,pick});
     setStatus(true, `OK · 데이터 ${draws.length}건 · 최신 ${draws[draws.length-1].key}`);
 
-    // history
     pushHistory({
       time: new Date().toLocaleString(),
       mode,
@@ -740,12 +708,12 @@
       pick
     });
 
-    // auto cycle progress
+    // ✅ 버튼 누를 때마다 cycle 자동 진행(반복 늦춤)
     setCycle(cycle + 1);
     setLastCnt(cnt);
   }
 
-  // ---------- BGM ----------
+  // ---------------- BGM ----------------
   async function scanBgmTracks(){
     const exts = ["mp3","mp4","m4a","ogg","wav"];
     const maxN = 50;
@@ -753,7 +721,6 @@
 
     async function exists(url){
       try{
-        // 일부 환경에서 HEAD가 막히는 경우가 있어 GET + range 시도
         const r = await fetch(url, { method:"GET", headers:{ "range":"bytes=0-1" }, cache:"no-cache" });
         return r.ok;
       }catch{ return false; }
@@ -762,7 +729,6 @@
     for(let i=1;i<=maxN;i++){
       for(const ext of exts){
         const url = `assets/bgm/track${i}.${ext}`;
-        // eslint-disable-next-line no-await-in-loop
         if(await exists(url)){
           found.push({label:`track${i}.${ext}`, url});
           break;
@@ -772,12 +738,17 @@
     return found;
   }
 
+  function isBgmOn(){ return (localStorage.getItem(LS.bgmOn)||"0")==="1"; }
+  function setBgmOn(v){ localStorage.setItem(LS.bgmOn, v ? "1":"0"); }
+  function updateBgmToggleText(){ $("bgmToggle").textContent = isBgmOn() ? "BGM: ON" : "BGM: OFF"; }
+
   function bgmInit(tracks){
     const sel = $("bgmSel");
     sel.innerHTML = "";
 
     if(!tracks.length){
       sel.innerHTML = `<option value="">(bgm 없음) assets/bgm/trackN.* 넣어주세요</option>`;
+      updateBgmToggleText();
       return;
     }
 
@@ -791,19 +762,21 @@
     sel.value = saved;
 
     const audio = $("bgmAudio");
+
     function applyTrack(){
       const v = sel.value;
       localStorage.setItem(LS.bgmTrack, v);
       audio.src = v;
       if(isBgmOn()) audio.play().catch(()=>{});
     }
+
     sel.addEventListener("change", applyTrack);
 
-    // volume
     const vol = clamp(parseInt(localStorage.getItem(LS.bgmVol)||"50",10),0,100);
     $("bgmVol").value = String(vol);
     $("bgmVolLabel").textContent = String(vol);
     audio.volume = vol/100;
+
     $("bgmVol").addEventListener("input", ()=>{
       const v = clamp(parseInt($("bgmVol").value||"50",10),0,100);
       $("bgmVolLabel").textContent = String(v);
@@ -827,36 +800,48 @@
     updateBgmToggleText();
   }
 
-  function isBgmOn(){
-    return (localStorage.getItem(LS.bgmOn)||"0") === "1";
-  }
-  function setBgmOn(v){
-    localStorage.setItem(LS.bgmOn, v ? "1" : "0");
-  }
-  function updateBgmToggleText(){
-    $("bgmToggle").textContent = isBgmOn() ? "BGM: ON" : "BGM: OFF";
-  }
-
-  // ---------- init ----------
+  // ---------------- init ----------------
   async function init(){
-    loadStateFromUrl();
+    // load url params
+    const u = new URL(location.href);
+    const qs = (k)=>u.searchParams.get(k);
+    if(qs("seed")) localStorage.setItem(LS.seed, qs("seed"));
+    if(qs("cycle")) localStorage.setItem(LS.cycle, String(parseInt(qs("cycle"),10)||0));
+    if(qs("recent") && ["10","20","30"].includes(qs("recent"))) localStorage.setItem(LS.recentN, qs("recent"));
+    if(qs("w")) localStorage.setItem(LS.w, String(clamp(parseInt(qs("w"),10)||60,0,100)));
+    if(qs("spread")) localStorage.setItem(LS.spread, String(clamp(parseInt(qs("spread"),10)||70,0,100)));
+    if(qs("preset") && ["balanced","high","spread","low"].includes(qs("preset"))) localStorage.setItem(LS.preset, qs("preset"));
+    if(qs("pick") && ["2","3","4","5","6","7","8","9","10"].includes(qs("pick"))) localStorage.setItem(LS.pick, qs("pick"));
+    if(qs("mode") && ["numbers","sum"].includes(qs("mode"))) localStorage.setItem(LS.mode, qs("mode"));
 
     // inputs
     $("seedInput").value = localStorage.getItem(LS.seed) || "TEAM-A";
     $("cycleInput").value = localStorage.getItem(LS.cycle) || "1";
+
     $("wSlider").value = String(getW());
     $("wLabel").textContent = String(getW());
     $("spreadSlider").value = String(getSpread());
     $("spreadLabel").textContent = String(getSpread());
+
     $("presetSel").value = getPreset();
     $("pickSel").value = String(getPick());
-    updatePresetHint();
 
+    updatePresetHint();
     setRecentTab(getRecentN());
+
     $("lastInfo").textContent = `lastCnt=${getLastCnt()}, viewOffset=${getViewOffset()}`;
     renderHistory();
 
-    // UI events
+    mode = (localStorage.getItem(LS.mode)||"numbers");
+    applyModeUI();
+
+    // events
+    $("tabNumbers").addEventListener("click", ()=>{ mode="numbers"; applyModeUI(); });
+    $("tabSum").addEventListener("click", ()=>{ mode="sum"; applyModeUI(); });
+
+    $("seedInput").addEventListener("change", ()=> localStorage.setItem(LS.seed, $("seedInput").value.trim()));
+    $("cycleInput").addEventListener("change", ()=> localStorage.setItem(LS.cycle, $("cycleInput").value));
+
     $("wSlider").addEventListener("input", ()=>{
       const v = clamp(parseInt($("wSlider").value||"60",10),0,100);
       localStorage.setItem(LS.w, String(v));
@@ -868,6 +853,7 @@
       $("spreadLabel").textContent = String(v);
       updatePresetHint();
     });
+
     $("presetSel").addEventListener("change", ()=>{
       localStorage.setItem(LS.preset, $("presetSel").value);
       updatePresetHint();
@@ -875,12 +861,6 @@
     $("pickSel").addEventListener("change", ()=>{
       localStorage.setItem(LS.pick, $("pickSel").value);
       updatePresetHint();
-    });
-    $("seedInput").addEventListener("change", ()=>{
-      localStorage.setItem(LS.seed, $("seedInput").value.trim());
-    });
-    $("cycleInput").addEventListener("change", ()=>{
-      localStorage.setItem(LS.cycle, $("cycleInput").value);
     });
 
     $("recent10").addEventListener("click", ()=>setRecentTab(10));
@@ -894,7 +874,6 @@
     $("btnResetView").addEventListener("click", ()=>{
       bumpViewOffset();
       $("lastInfo").textContent = `lastCnt=${getLastCnt()}, viewOffset=${getViewOffset()}`;
-      // 같은 cycle에서 lastCnt로 재생성
       recommend(getLastCnt());
     });
 
@@ -907,33 +886,21 @@
       renderHistory();
     });
 
-    $("tabNumbers").addEventListener("click", ()=>{
-      mode="numbers";
-      $("tabNumbers").classList.add("on");
-      $("tabSum").classList.remove("on");
-      $("modeLabel").textContent="넘버스 게임 모드";
-    });
-    $("tabSum").addEventListener("click", ()=>{
-      mode="sum";
-      $("tabSum").classList.add("on");
-      $("tabNumbers").classList.remove("on");
-      $("modeLabel").textContent="숫자합 게임 모드";
-    });
-
     $("btnShare").addEventListener("click", async ()=>{
-      const u = new URL(location.href);
-      u.searchParams.set("seed", getSeed());
-      u.searchParams.set("cycle", String(getCycle()));
-      u.searchParams.set("recent", String(getRecentN()));
-      u.searchParams.set("w", String(getW()));
-      u.searchParams.set("spread", String(getSpread()));
-      u.searchParams.set("preset", getPreset());
-      u.searchParams.set("pick", String(getPick()));
+      const uu = new URL(location.href);
+      uu.searchParams.set("seed", getSeed());
+      uu.searchParams.set("cycle", String(getCycle()));
+      uu.searchParams.set("recent", String(getRecentN()));
+      uu.searchParams.set("w", String(getW()));
+      uu.searchParams.set("spread", String(getSpread()));
+      uu.searchParams.set("preset", getPreset());
+      uu.searchParams.set("pick", String(getPick()));
+      uu.searchParams.set("mode", mode);
       try{
-        await navigator.clipboard.writeText(u.toString());
+        await navigator.clipboard.writeText(uu.toString());
         alert("공유 링크가 복사되었습니다!");
       }catch{
-        prompt("복사 실패 시 아래 링크를 수동 복사:", u.toString());
+        prompt("복사 실패 시 아래 링크를 수동 복사:", uu.toString());
       }
     });
 
@@ -943,7 +910,7 @@
       if(!res.ok) throw new Error("HTTP "+res.status);
       const j = await res.json();
       draws = Array.isArray(j) ? j : [];
-      allFreq = computeAllFreq();
+      allFreq = computeFreqShallow(draws);
 
       if(draws.length){
         setStatus(true, `OK · 데이터 ${draws.length}건 · 최신 ${draws[draws.length-1].key}`);
@@ -954,7 +921,7 @@
         `데이터: <code>data/speedkeno_draws.json</code> (총 <b>${draws.length}</b>건)<br/>
          최신: <b>${draws.length ? draws[draws.length-1].key : "-"}</b><br/>
          업데이트: GitHub Actions로 주기 갱신<br/>
-         참고: 과거 빈도 기반 추천은 당첨 보장이 아닙니다.`;
+         숫자합: <b>253-486</b>, <b>487-512</b> 구간은 <b>1회 1매 제한</b>(추천도 제한 준수)`;
 
     }catch(e){
       setStatus(false, "데이터 로딩 실패");
