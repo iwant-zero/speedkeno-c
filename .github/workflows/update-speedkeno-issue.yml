@@ -31,8 +31,10 @@ jobs:
 
       - name: Build recommendation markdown
         id: rec
+        env:
+          SPEEDKENO_COMMAND: ${{ github.event.comment.body }}
         run: |
-          node scripts/update_speedkeno.mjs --recommend --command "${{ github.event.comment.body }}" > /tmp/rec.md
+          node scripts/update_speedkeno.mjs --recommend > /tmp/rec.md
           echo "md<<EOF" >> $GITHUB_OUTPUT
           cat /tmp/rec.md >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
