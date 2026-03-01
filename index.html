@@ -1,0 +1,972 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>스피드키노 추천기 (데이터 기반 · 결정론)</title>
+  <style>
+    :root{
+      --bg:#0b1220; --card:#101a2e; --muted:#9fb0d0; --text:#eaf0ff;
+      --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.16);
+      --ok:#4fe3a5; --warn:#ffd166; --bad:#ff5d7a; --accent:#7aa2ff;
+      --shadow:0 14px 40px rgba(0,0,0,.35);
+      --r:18px;
+      font-synthesis-weight:none;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:radial-gradient(1200px 600px at 20% 0%, rgba(122,162,255,.18), transparent 60%),
+               radial-gradient(900px 500px at 80% 10%, rgba(79,227,165,.10), transparent 55%),
+               var(--bg);
+      color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Pretendard,Apple SD Gothic Neo,Noto Sans KR,sans-serif;
+    }
+    a{color:inherit}
+    .wrap{max-width:1100px; margin:0 auto; padding:18px;}
+    header{
+      display:flex; gap:12px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+    .title{display:flex; flex-direction:column; gap:6px;}
+    .title h1{margin:0; font-size:20px; letter-spacing:.2px;}
+    .title .sub{color:var(--muted); font-size:13px; line-height:1.35;}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px; padding:8px 10px;
+      border:1px solid var(--line); background:rgba(16,26,46,.65);
+      border-radius:999px; box-shadow:var(--shadow);
+      font-size:12px; color:var(--muted);
+    }
+    .grid{
+      display:grid; gap:12px;
+      grid-template-columns: 1.1fr .9fr;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+    }
+    .card{
+      background:rgba(16,26,46,.78);
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:12px 12px 10px;
+      border-bottom:1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    }
+    .card .hd .h{
+      font-weight:700; font-size:14px;
+    }
+    .card .bd{padding:12px}
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .row > *{flex:0 0 auto}
+    .btn{
+      border:1px solid var(--line2);
+      background:rgba(122,162,255,.12);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:650;
+      letter-spacing:.2px;
+      transition:.12s transform ease, .12s background ease;
+      user-select:none;
+    }
+    .btn:active{transform:scale(.98)}
+    .btn.primary{background:rgba(79,227,165,.14); border-color:rgba(79,227,165,.25)}
+    .btn.ghost{background:transparent}
+    .btn.small{padding:8px 10px; font-size:12px; border-radius:10px}
+    .btn.danger{background:rgba(255,93,122,.14); border-color:rgba(255,93,122,.25)}
+    .tabs{display:flex; gap:8px; flex-wrap:wrap}
+    .tab{
+      padding:8px 10px; border-radius:999px; border:1px solid var(--line2);
+      background:transparent; cursor:pointer; font-size:12px; color:var(--muted);
+    }
+    .tab.on{background:rgba(122,162,255,.18); color:var(--text)}
+    label{font-size:12px; color:var(--muted)}
+    input[type="text"], input[type="number"], select{
+      background:rgba(0,0,0,.20);
+      border:1px solid var(--line2);
+      color:var(--text);
+      border-radius:12px;
+      padding:10px 10px;
+      outline:none;
+      min-width:180px;
+    }
+    input[type="range"]{width:min(320px, 70vw)}
+    .kv{display:grid; grid-template-columns: 120px 1fr; gap:8px 10px; align-items:center}
+    @media (max-width:520px){
+      .kv{grid-template-columns:1fr}
+      input[type="text"], select{min-width:0; width:100%}
+    }
+    .muted{color:var(--muted)}
+    .sep{height:1px; background:var(--line); margin:10px 0}
+    .results{display:flex; flex-direction:column; gap:10px}
+    .set{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px;
+      background:rgba(0,0,0,.16);
+    }
+    .set .meta{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; color:var(--muted); font-size:12px}
+    .balls{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+    .ball{
+      width:38px; height:38px; border-radius:999px;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:800;
+      border:1px solid rgba(255,255,255,.22);
+      box-shadow: 0 10px 22px rgba(0,0,0,.35) inset, 0 6px 18px rgba(0,0,0,.20);
+      letter-spacing:.2px;
+      user-select:none;
+    }
+    .sumBox{
+      margin-top:10px; padding:10px; border-radius:12px;
+      border:1px dashed rgba(255,255,255,.18);
+      color:var(--muted); font-size:12px;
+    }
+    .histItem{
+      padding:10px; border-radius:14px; border:1px solid var(--line);
+      background:rgba(0,0,0,.14);
+    }
+    .histItem .t{display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; font-size:12px; color:var(--muted)}
+    .footnote{font-size:12px; color:var(--muted); line-height:1.5}
+    .right{justify-content:flex-end}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="title">
+        <h1>스피드키노 추천기 (데이터 기반 · 결정론)</h1>
+        <div class="sub">
+          무작위 0% · <b>cycle + 기기 seed + 사용자 seed + 밴드 분산</b>으로 반복을 최대한 늦추는 구조.<br/>
+          “넘버스 게임(번호 추천)” + “숫자합 게임(합 구간 추천)” 2가지 제공.
+        </div>
+      </div>
+      <div class="pill" id="statusPill">데이터 로딩중…</div>
+    </header>
+
+    <div class="grid">
+      <!-- LEFT: controls -->
+      <section class="card">
+        <div class="hd">
+          <div class="h">추천 설정</div>
+          <div class="tabs" aria-label="game tabs">
+            <button class="tab on" id="tabNumbers">넘버스 게임</button>
+            <button class="tab" id="tabSum">숫자합 게임</button>
+          </div>
+        </div>
+        <div class="bd">
+          <div class="kv">
+            <label>사용자 seed</label>
+            <div class="row">
+              <input type="text" id="seedInput" placeholder="예: TEAM-A, 닉네임, 2026-03-01-1" />
+              <button class="btn small" id="btnShare">공유 링크</button>
+            </div>
+
+            <label>cycle</label>
+            <div class="row">
+              <input type="number" id="cycleInput" min="0" step="1" style="width:140px" />
+              <button class="btn small" id="btnPlus50">+50</button>
+              <button class="btn small" id="btnPlus100">+100</button>
+              <button class="btn small" id="btnPlus500">+500</button>
+              <button class="btn small ghost" id="btnResetView">같은 cycle 재생성</button>
+            </div>
+
+            <label>최근 탭</label>
+            <div class="row">
+              <button class="tab on" id="recent30">최근 30</button>
+              <button class="tab" id="recent20">최근 20</button>
+              <button class="tab" id="recent10">최근 10</button>
+            </div>
+
+            <label>최근 가중(w)</label>
+            <div class="row">
+              <input type="range" id="wSlider" min="0" max="100" step="1" />
+              <span class="muted" id="wLabel">60</span>
+            </div>
+
+            <label>밴드 분산 강도</label>
+            <div class="row">
+              <input type="range" id="spreadSlider" min="0" max="100" step="1" />
+              <span class="muted" id="spreadLabel">70</span>
+            </div>
+
+            <label>밴드 프리셋</label>
+            <div class="row">
+              <select id="presetSel">
+                <option value="balanced">balanced (상/중/하 균형)</option>
+                <option value="high">high (상위 비중↑)</option>
+                <option value="spread">spread (중위 비중↑)</option>
+                <option value="low">low (하위 비중↑)</option>
+              </select>
+              <span class="muted" id="presetHint"></span>
+            </div>
+
+            <label>픽 개수(넘버스)</label>
+            <div class="row">
+              <select id="pickSel">
+                <option value="10">10개</option>
+                <option value="9">9개</option>
+                <option value="8">8개</option>
+                <option value="7">7개</option>
+                <option value="6">6개</option>
+                <option value="5">5개</option>
+                <option value="4">4개</option>
+                <option value="3">3개</option>
+                <option value="2">2개</option>
+              </select>
+              <span class="muted">* 숫자합 게임은 “합 구간” 추천</span>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="row">
+            <button class="btn primary" id="btnRec1">1개 추천</button>
+            <button class="btn primary" id="btnRec5">5개 추천</button>
+            <button class="btn primary" id="btnRec10">10개 추천</button>
+            <span class="muted" id="lastInfo"></span>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="footnote" id="dataInfo">
+            데이터: <code>data/speedkeno_draws.json</code><br/>
+            업데이트: GitHub Actions로 주기 갱신<br/>
+            참고: 과거 빈도 기반 추천은 당첨 보장이 아닙니다.
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: BGM + quick -->
+      <section class="card">
+        <div class="hd">
+          <div class="h">BGM</div>
+          <div class="row right">
+            <button class="btn small" id="bgmToggle">ON/OFF</button>
+          </div>
+        </div>
+        <div class="bd">
+          <div class="row" style="align-items:flex-end">
+            <div style="flex:1 1 auto; min-width:220px">
+              <label>트랙 선택</label><br/>
+              <select id="bgmSel" style="width:100%"></select>
+            </div>
+            <div style="flex:0 0 auto">
+              <button class="btn" id="bgmPlay">재생/정지</button>
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <label>볼륨</label>
+            <input type="range" id="bgmVol" min="0" max="100" step="1" />
+            <span class="muted" id="bgmVolLabel">50</span>
+          </div>
+          <div class="sep"></div>
+          <div class="footnote">
+            <code>speedkeno-c/assets/bgm/</code> 안에 <b>track1~track50</b> 파일을 넣으면 자동 탐색합니다.<br/>
+            (mp3/mp4/m4a/ogg/wav 지원, ON/OFF/볼륨/선택 트랙 저장)
+          </div>
+          <audio id="bgmAudio" preload="none" loop></audio>
+        </div>
+      </section>
+    </div>
+
+    <div class="grid" style="margin-top:12px">
+      <section class="card">
+        <div class="hd">
+          <div class="h">추천 결과</div>
+          <div class="muted" id="modeLabel">넘버스 게임 모드</div>
+        </div>
+        <div class="bd">
+          <div class="results" id="results"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="hd">
+          <div class="h">최근 추천(최대 20)</div>
+          <button class="btn small danger" id="btnClearHist">기록 삭제</button>
+        </div>
+        <div class="bd" id="history"></div>
+      </section>
+    </div>
+
+    <div style="height:16px"></div>
+  </div>
+
+<script>
+  // ---------- localStorage keys ----------
+  const LS = {
+    seed: "sk_seed",
+    cycle: "sk_cycle",
+    view: "sk_viewOffset",
+    lastCnt: "sk_lastCnt",
+    recentN: "sk_recentN",
+    w: "sk_recentWeight",
+    spread: "sk_spread",
+    preset: "sk_preset",
+    pick: "sk_pick",
+    hist: "sk_hist",
+    bgmOn: "bgm_enabled",
+    bgmVol: "bgm_volume",
+    bgmTrack: "bgm_track"
+  };
+
+  // ---------- deterministic PRNG (no Math.random) ----------
+  function fnv1a32(str){
+    let h = 0x811c9dc5;
+    for(let i=0;i<str.length;i++){
+      h ^= str.charCodeAt(i);
+      h = (h * 0x01000193) >>> 0;
+    }
+    return h >>> 0;
+  }
+  function makeXorShift32(seedU32){
+    let x = seedU32 >>> 0;
+    return {
+      nextU32(){
+        x ^= (x << 13) >>> 0;
+        x ^= (x >>> 17) >>> 0;
+        x ^= (x << 5) >>> 0;
+        return (x >>> 0);
+      },
+      nextInt(n){
+        if(n<=0) return 0;
+        return (this.nextU32() % n) >>> 0;
+      }
+    };
+  }
+
+  // ---------- helpers ----------
+  const $ = (id)=>document.getElementById(id);
+  const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
+  const pad2 = (n)=>String(n).padStart(2,"0");
+
+  function numColor(n){
+    // 1~70 컬러볼(취향껏)
+    if(n<=10) return "linear-gradient(180deg,#ffd166,#b78b1d)";
+    if(n<=20) return "linear-gradient(180deg,#7aa2ff,#2f4fb8)";
+    if(n<=30) return "linear-gradient(180deg,#ff5d7a,#a91f39)";
+    if(n<=40) return "linear-gradient(180deg,#c8d0e6,#5e6a88)";
+    if(n<=50) return "linear-gradient(180deg,#4fe3a5,#1a8f67)";
+    if(n<=60) return "linear-gradient(180deg,#b88cff,#6b38d6)";
+    return "linear-gradient(180deg,#ffb86b,#b25b11)";
+  }
+
+  // sum bins for "숫자합 게임"
+  function sumToBin(sum){
+    if(sum<=649) return "b1";
+    if(sum<=699) return "b2";
+    if(sum<=749) return "b3";
+    if(sum<=799) return "b4";
+    if(sum<=849) return "b5";
+    return "b6";
+  }
+  function binLabel(bin){
+    return ({
+      b1:"≤649",
+      b2:"650~699",
+      b3:"700~749",
+      b4:"750~799",
+      b5:"800~849",
+      b6:"≥850"
+    })[bin]||bin;
+  }
+
+  function makeEmptyFreq(){
+    const n={}, l={};
+    for(let i=1;i<=70;i++){ n[i]=0; l[i]=0; }
+    return { numberFreq:n, luckyFreq:l };
+  }
+  function computeFreqShallow(draws){
+    const base = makeEmptyFreq();
+    const sumBin = {b1:0,b2:0,b3:0,b4:0,b5:0,b6:0};
+    for(const d of draws){
+      for(const x of d.numbers||[]) if(x>=1&&x<=70) base.numberFreq[x]+=1;
+      if((d.lucky||0)>=1 && d.lucky<=70) base.luckyFreq[d.lucky]+=1;
+      if(Number.isFinite(d.sum)){
+        sumBin[sumToBin(d.sum)] += 1;
+      }
+    }
+    return { ...base, sumBin };
+  }
+  function blendScore(allFreq, recentFreq, w01){
+    let aT=0, rT=0;
+    for(let i=1;i<=70;i++){ aT += (allFreq[i]||0); rT += (recentFreq[i]||0); }
+    const out={};
+    for(let i=1;i<=70;i++){
+      const a = aT ? (allFreq[i]||0)/aT : 0;
+      const r = rT ? (recentFreq[i]||0)/rT : 0;
+      out[i] = (1-w01)*a + w01*r;
+    }
+    return out;
+  }
+  function rankByScore(scoreObj){
+    const arr = Array.from({length:70},(_,i)=>i+1);
+    arr.sort((a,b)=>{
+      const da=scoreObj[a]||0, db=scoreObj[b]||0;
+      if(db!==da) return db-da;
+      return a-b;
+    });
+    return arr;
+  }
+  function makePickPlan(pickTotal, preset){
+    const base = ({
+      balanced:[4,3,3],
+      high:[6,3,1],
+      spread:[3,4,3],
+      low:[3,3,4]
+    })[preset] || [4,3,3];
+
+    const sum = base[0]+base[1]+base[2];
+    let h = Math.round((base[0]/sum)*pickTotal);
+    let m = Math.round((base[1]/sum)*pickTotal);
+    let l = pickTotal - h - m;
+    if(l<0){ l=0; if(m>0)m--; else if(h>0)h--; }
+    while(h+m+l<pickTotal) l++;
+    return [h,m,l];
+  }
+  function pickFromBand(bandArr, pickCount, spread01, prng){
+    const minFrac = 0.2;
+    const frac = minFrac + (1-minFrac)*spread01;
+    const allowed = Math.max(1, Math.floor(bandArr.length * frac));
+    const pool = bandArr.slice(0, allowed);
+    for(let i=0;i<Math.min(pickCount,pool.length);i++){
+      const j = i + prng.nextInt(pool.length - i);
+      const tmp=pool[i]; pool[i]=pool[j]; pool[j]=tmp;
+    }
+    return pool.slice(0, pickCount);
+  }
+  function recommendNumberSet({ ranked, pickTotal, preset, spread01, seedStr }){
+    const high = ranked.slice(0,20);
+    const mid  = ranked.slice(20,40);
+    const low  = ranked.slice(40);
+
+    const prng = makeXorShift32(fnv1a32(seedStr));
+    const [hCnt,mCnt,lCnt] = makePickPlan(pickTotal, preset);
+
+    const picks = [
+      ...pickFromBand(high, hCnt, spread01, prng),
+      ...pickFromBand(mid,  mCnt, spread01, prng),
+      ...pickFromBand(low,  lCnt, spread01, prng)
+    ];
+    let uniq = Array.from(new Set(picks)).slice(0, pickTotal);
+    uniq.sort((a,b)=>a-b);
+
+    if(uniq.length<pickTotal){
+      const pr2 = makeXorShift32(fnv1a32(seedStr+"|fill"));
+      const pool = ranked.slice();
+      for(let i=0;i<pool.length && uniq.length<pickTotal;i++){
+        const j = i + pr2.nextInt(pool.length-i);
+        [pool[i],pool[j]]=[pool[j],pool[i]];
+        if(!uniq.includes(pool[i])) uniq.push(pool[i]);
+      }
+      uniq.sort((a,b)=>a-b);
+    }
+
+    return { numbers: uniq, band:{high:hCnt,mid:mCnt,low:lCnt} };
+  }
+  function recommendSumGame({ sumBinAll, sumBinRecent, w01, seedStr }){
+    const bins = ["b1","b2","b3","b4","b5","b6"];
+    const aT = bins.reduce((s,k)=>s+(sumBinAll[k]||0),0);
+    const rT = bins.reduce((s,k)=>s+(sumBinRecent[k]||0),0);
+
+    const score = {};
+    for(const b of bins){
+      const a = aT ? (sumBinAll[b]||0)/aT : 0;
+      const r = rT ? (sumBinRecent[b]||0)/rT : 0;
+      score[b] = (1-w01)*a + w01*r;
+    }
+    bins.sort((x,y)=>{
+      if(score[y]!==score[x]) return score[y]-score[x];
+      return x.localeCompare(y);
+    });
+
+    const prng = makeXorShift32(fnv1a32(seedStr+"|sum"));
+    const top=bins.slice(0,2), mid=bins.slice(2,4), low=bins.slice(4);
+    const g = prng.nextInt(3);
+    let chosen = g===0 ? top[prng.nextInt(top.length)]
+                : g===1 ? mid[prng.nextInt(mid.length)]
+                : low[prng.nextInt(low.length)];
+    return { bin:chosen, label:binLabel(chosen), rank:bins };
+  }
+
+  function deviceSeed(){
+    // 개인정보 수집 목적 X: 동일 기기에서 “대충 안정적인” seed
+    const s = [
+      navigator.userAgent,
+      navigator.language,
+      String(screen.width)+"x"+String(screen.height),
+      String(screen.colorDepth),
+      String(Intl.DateTimeFormat().resolvedOptions().timeZone || "tz"),
+      String(new Date().getTimezoneOffset()),
+      navigator.platform
+    ].join("|");
+    return String(fnv1a32(s));
+  }
+
+  // ---------- app state ----------
+  let mode = "numbers"; // "numbers" or "sum"
+  let draws = [];
+  let allFreq = null;
+
+  function loadStateFromUrl(){
+    const u = new URL(location.href);
+    const seed = u.searchParams.get("seed");
+    const cycle = u.searchParams.get("cycle");
+    const recent = u.searchParams.get("recent");
+    const w = u.searchParams.get("w");
+    const spread = u.searchParams.get("spread");
+    const preset = u.searchParams.get("preset");
+    const pick = u.searchParams.get("pick");
+
+    if(seed) localStorage.setItem(LS.seed, seed);
+    if(cycle) localStorage.setItem(LS.cycle, String(parseInt(cycle,10)||0));
+    if(recent && ["10","20","30"].includes(recent)) localStorage.setItem(LS.recentN, recent);
+    if(w) localStorage.setItem(LS.w, String(clamp(parseInt(w,10)||60,0,100)));
+    if(spread) localStorage.setItem(LS.spread, String(clamp(parseInt(spread,10)||70,0,100)));
+    if(preset && ["balanced","high","spread","low"].includes(preset)) localStorage.setItem(LS.preset, preset);
+    if(pick && ["2","3","4","5","6","7","8","9","10"].includes(pick)) localStorage.setItem(LS.pick, pick);
+  }
+
+  function setStatus(ok, text){
+    const p = $("statusPill");
+    p.textContent = text;
+    p.style.borderColor = ok ? "rgba(79,227,165,.25)" : "rgba(255,93,122,.25)";
+    p.style.color = ok ? "var(--ok)" : "var(--warn)";
+  }
+
+  function updatePresetHint(){
+    const p = $("presetSel").value;
+    const pick = parseInt($("pickSel").value,10);
+    const plan = makePickPlan(pick, p);
+    $("presetHint").textContent = `밴드비율: 상${plan[0]}/중${plan[1]}/하${plan[2]}`;
+  }
+
+  function setRecentTab(n){
+    localStorage.setItem(LS.recentN, String(n));
+    ["10","20","30"].forEach(k=>{
+      $("recent"+k).classList.toggle("on", String(n)===k);
+    });
+  }
+
+  function getRecentN(){ return parseInt(localStorage.getItem(LS.recentN)||"30",10); }
+  function getW(){ return clamp(parseInt(localStorage.getItem(LS.w)||"60",10),0,100); }
+  function getSpread(){ return clamp(parseInt(localStorage.getItem(LS.spread)||"70",10),0,100); }
+  function getPreset(){ return localStorage.getItem(LS.preset)||"balanced"; }
+  function getPick(){ return parseInt(localStorage.getItem(LS.pick)||"10",10); }
+
+  function getSeed(){
+    return ($("seedInput").value||"").trim() || "TEAM";
+  }
+  function getCycle(){
+    return parseInt($("cycleInput").value||"0",10) || 0;
+  }
+  function setCycle(v){
+    $("cycleInput").value = String(Math.max(0, v|0));
+    localStorage.setItem(LS.cycle, $("cycleInput").value);
+  }
+
+  function getViewOffset(){
+    return parseInt(localStorage.getItem(LS.view)||"0",10) || 0;
+  }
+  function bumpViewOffset(){
+    const v = getViewOffset()+1;
+    localStorage.setItem(LS.view, String(v));
+    return v;
+  }
+  function resetViewOffset(){
+    localStorage.setItem(LS.view, "0");
+  }
+
+  function setLastCnt(n){
+    localStorage.setItem(LS.lastCnt, String(n));
+    $("lastInfo").textContent = `lastCnt=${n}, viewOffset=${getViewOffset()}`;
+  }
+  function getLastCnt(){
+    return parseInt(localStorage.getItem(LS.lastCnt)||"5",10) || 5;
+  }
+
+  function pushHistory(item){
+    const arr = JSON.parse(localStorage.getItem(LS.hist)||"[]");
+    arr.unshift(item);
+    while(arr.length>20) arr.pop();
+    localStorage.setItem(LS.hist, JSON.stringify(arr));
+    renderHistory();
+  }
+
+  function renderHistory(){
+    const box = $("history");
+    const arr = JSON.parse(localStorage.getItem(LS.hist)||"[]");
+    if(!arr.length){
+      box.innerHTML = `<div class="muted">아직 추천 기록이 없습니다.</div>`;
+      return;
+    }
+    box.innerHTML = arr.map(h=>{
+      return `
+        <div class="histItem">
+          <div class="t">
+            <div>${h.time}</div>
+            <div>cycle=${h.cycle} · cnt=${h.cnt} · seed=${h.seed}</div>
+          </div>
+          <div class="muted" style="margin-top:6px">${h.mode==="numbers"?"넘버스":"숫자합"} · recent=${h.recent} · w=${h.w} · spread=${h.spread} · preset=${h.preset} · pick=${h.pick}</div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderResults(sets, cfg){
+    const box = $("results");
+    if(!sets.length){
+      box.innerHTML = `<div class="muted">추천 결과가 없습니다.</div>`;
+      return;
+    }
+    box.innerHTML = sets.map((s, idx)=>{
+      const balls = (s.numbers||[]).map(n=>{
+        return `<div class="ball" style="background:${numColor(n)}">${pad2(n)}</div>`;
+      }).join("");
+
+      const sumLine = s.sumRec ? `
+        <div class="sumBox">
+          <b>숫자합 추천</b> : 구간 <b>${s.sumRec.label}</b> (bin=${s.sumRec.bin})
+        </div>
+      ` : "";
+
+      return `
+        <div class="set">
+          <div class="meta">
+            <div><b>#${String(idx+1).padStart(2,"0")}</b> · 밴드 상${s.band.high}/중${s.band.mid}/하${s.band.low}</div>
+            <div class="muted">cycle=${cfg.cycle} · view=${cfg.viewOffset} · recent=${cfg.recentN} · w=${cfg.w} · spread=${cfg.spread}</div>
+          </div>
+          <div class="balls">${balls}</div>
+          ${sumLine}
+        </div>
+      `;
+    }).join("");
+  }
+
+  function computeAllFreq(){
+    // draws가 ascending이라고 가정 (Actions script도 그렇게 저장)
+    const base = makeEmptyFreq();
+    const sumBin = {b1:0,b2:0,b3:0,b4:0,b5:0,b6:0};
+    for(const d of draws){
+      for(const x of d.numbers||[]) if(x>=1&&x<=70) base.numberFreq[x]+=1;
+      if((d.lucky||0)>=1 && d.lucky<=70) base.luckyFreq[d.lucky]+=1;
+      if(Number.isFinite(d.sum)) sumBin[sumToBin(d.sum)] += 1;
+    }
+    return { ...base, sumBin };
+  }
+
+  function recommend(cnt){
+    if(!draws.length){
+      setStatus(false, "데이터가 없습니다 (Actions 업데이트 필요)");
+      return;
+    }
+
+    const seedUser = getSeed();
+    const dev = deviceSeed();
+    const cycle = getCycle();
+    const viewOffset = getViewOffset();
+    const recentN = getRecentN();
+    const w = getW();
+    const spread = getSpread();
+    const preset = getPreset();
+    const pick = getPick();
+
+    const w01 = w/100;
+    const spread01 = spread/100;
+
+    // recent slice
+    const recentDraws = draws.slice(Math.max(0, draws.length - recentN));
+    const recentFreq = computeFreqShallow(recentDraws);
+
+    // number ranking
+    const scoreNum = blendScore(allFreq.numberFreq, recentFreq.numberFreq, w01);
+    const rankedNum = rankByScore(scoreNum);
+
+    // sum bins
+    const sumRecFn = (seedStr)=>recommendSumGame({
+      sumBinAll: allFreq.sumBin,
+      sumBinRecent: recentFreq.sumBin,
+      w01,
+      seedStr
+    });
+
+    const baseSeed = `${dev}|${seedUser}|recent=${recentN}|w=${w}|spread=${spread}|preset=${preset}|pick=${pick}|mode=${mode}`;
+
+    const sets = [];
+    const seen = new Set();
+    for(let i=0;i<cnt;i++){
+      let v = viewOffset;
+      let chosen = null;
+
+      while(v < viewOffset + 200){
+        const seedStr = `${baseSeed}|cycle=${cycle+i}|view=${v}`;
+        const s = recommendNumberSet({ ranked: rankedNum, pickTotal: pick, preset, spread01, seedStr });
+        const k = s.numbers.join(",");
+        if(!seen.has(k)){
+          seen.add(k);
+          chosen = s;
+          if(mode==="sum"){
+            chosen.sumRec = sumRecFn(seedStr);
+          } else {
+            // numbers 모드에서도 “숫자합 게임 같이 보고 싶다”를 위해 같이 달아둠(원하면 지워도 됨)
+            chosen.sumRec = sumRecFn(seedStr);
+          }
+          break;
+        }
+        v++;
+      }
+      if(chosen) sets.push(chosen);
+    }
+
+    renderResults(sets, {cycle,viewOffset,recentN,w,spread});
+    setStatus(true, `OK · 데이터 ${draws.length}건 · 최신 ${draws[draws.length-1].key}`);
+
+    // history
+    pushHistory({
+      time: new Date().toLocaleString(),
+      mode,
+      seed: seedUser,
+      cycle,
+      cnt,
+      recent: recentN,
+      w,
+      spread,
+      preset,
+      pick
+    });
+
+    // auto cycle progress
+    setCycle(cycle + 1);
+    setLastCnt(cnt);
+  }
+
+  // ---------- BGM ----------
+  async function scanBgmTracks(){
+    const exts = ["mp3","mp4","m4a","ogg","wav"];
+    const maxN = 50;
+    const found = [];
+
+    async function exists(url){
+      try{
+        // 일부 환경에서 HEAD가 막히는 경우가 있어 GET + range 시도
+        const r = await fetch(url, { method:"GET", headers:{ "range":"bytes=0-1" }, cache:"no-cache" });
+        return r.ok;
+      }catch{ return false; }
+    }
+
+    for(let i=1;i<=maxN;i++){
+      for(const ext of exts){
+        const url = `assets/bgm/track${i}.${ext}`;
+        // eslint-disable-next-line no-await-in-loop
+        if(await exists(url)){
+          found.push({label:`track${i}.${ext}`, url});
+          break;
+        }
+      }
+    }
+    return found;
+  }
+
+  function bgmInit(tracks){
+    const sel = $("bgmSel");
+    sel.innerHTML = "";
+
+    if(!tracks.length){
+      sel.innerHTML = `<option value="">(bgm 없음) assets/bgm/trackN.* 넣어주세요</option>`;
+      return;
+    }
+
+    const saved = localStorage.getItem(LS.bgmTrack) || tracks[0].url;
+    for(const t of tracks){
+      const opt = document.createElement("option");
+      opt.value = t.url;
+      opt.textContent = t.label;
+      sel.appendChild(opt);
+    }
+    sel.value = saved;
+
+    const audio = $("bgmAudio");
+    function applyTrack(){
+      const v = sel.value;
+      localStorage.setItem(LS.bgmTrack, v);
+      audio.src = v;
+      if(isBgmOn()) audio.play().catch(()=>{});
+    }
+    sel.addEventListener("change", applyTrack);
+
+    // volume
+    const vol = clamp(parseInt(localStorage.getItem(LS.bgmVol)||"50",10),0,100);
+    $("bgmVol").value = String(vol);
+    $("bgmVolLabel").textContent = String(vol);
+    audio.volume = vol/100;
+    $("bgmVol").addEventListener("input", ()=>{
+      const v = clamp(parseInt($("bgmVol").value||"50",10),0,100);
+      $("bgmVolLabel").textContent = String(v);
+      localStorage.setItem(LS.bgmVol, String(v));
+      audio.volume = v/100;
+    });
+
+    $("bgmPlay").addEventListener("click", ()=>{
+      if(audio.paused) audio.play().catch(()=>{});
+      else audio.pause();
+    });
+
+    $("bgmToggle").addEventListener("click", ()=>{
+      setBgmOn(!isBgmOn());
+      if(isBgmOn()) audio.play().catch(()=>{});
+      else audio.pause();
+      updateBgmToggleText();
+    });
+
+    applyTrack();
+    updateBgmToggleText();
+  }
+
+  function isBgmOn(){
+    return (localStorage.getItem(LS.bgmOn)||"0") === "1";
+  }
+  function setBgmOn(v){
+    localStorage.setItem(LS.bgmOn, v ? "1" : "0");
+  }
+  function updateBgmToggleText(){
+    $("bgmToggle").textContent = isBgmOn() ? "BGM: ON" : "BGM: OFF";
+  }
+
+  // ---------- init ----------
+  async function init(){
+    loadStateFromUrl();
+
+    // inputs
+    $("seedInput").value = localStorage.getItem(LS.seed) || "TEAM-A";
+    $("cycleInput").value = localStorage.getItem(LS.cycle) || "1";
+    $("wSlider").value = String(getW());
+    $("wLabel").textContent = String(getW());
+    $("spreadSlider").value = String(getSpread());
+    $("spreadLabel").textContent = String(getSpread());
+    $("presetSel").value = getPreset();
+    $("pickSel").value = String(getPick());
+    updatePresetHint();
+
+    setRecentTab(getRecentN());
+    $("lastInfo").textContent = `lastCnt=${getLastCnt()}, viewOffset=${getViewOffset()}`;
+    renderHistory();
+
+    // UI events
+    $("wSlider").addEventListener("input", ()=>{
+      const v = clamp(parseInt($("wSlider").value||"60",10),0,100);
+      localStorage.setItem(LS.w, String(v));
+      $("wLabel").textContent = String(v);
+    });
+    $("spreadSlider").addEventListener("input", ()=>{
+      const v = clamp(parseInt($("spreadSlider").value||"70",10),0,100);
+      localStorage.setItem(LS.spread, String(v));
+      $("spreadLabel").textContent = String(v);
+      updatePresetHint();
+    });
+    $("presetSel").addEventListener("change", ()=>{
+      localStorage.setItem(LS.preset, $("presetSel").value);
+      updatePresetHint();
+    });
+    $("pickSel").addEventListener("change", ()=>{
+      localStorage.setItem(LS.pick, $("pickSel").value);
+      updatePresetHint();
+    });
+    $("seedInput").addEventListener("change", ()=>{
+      localStorage.setItem(LS.seed, $("seedInput").value.trim());
+    });
+    $("cycleInput").addEventListener("change", ()=>{
+      localStorage.setItem(LS.cycle, $("cycleInput").value);
+    });
+
+    $("recent10").addEventListener("click", ()=>setRecentTab(10));
+    $("recent20").addEventListener("click", ()=>setRecentTab(20));
+    $("recent30").addEventListener("click", ()=>setRecentTab(30));
+
+    $("btnPlus50").addEventListener("click", ()=>setCycle(getCycle()+50));
+    $("btnPlus100").addEventListener("click", ()=>setCycle(getCycle()+100));
+    $("btnPlus500").addEventListener("click", ()=>setCycle(getCycle()+500));
+
+    $("btnResetView").addEventListener("click", ()=>{
+      bumpViewOffset();
+      $("lastInfo").textContent = `lastCnt=${getLastCnt()}, viewOffset=${getViewOffset()}`;
+      // 같은 cycle에서 lastCnt로 재생성
+      recommend(getLastCnt());
+    });
+
+    $("btnRec1").addEventListener("click", ()=>recommend(1));
+    $("btnRec5").addEventListener("click", ()=>recommend(5));
+    $("btnRec10").addEventListener("click", ()=>recommend(10));
+
+    $("btnClearHist").addEventListener("click", ()=>{
+      localStorage.removeItem(LS.hist);
+      renderHistory();
+    });
+
+    $("tabNumbers").addEventListener("click", ()=>{
+      mode="numbers";
+      $("tabNumbers").classList.add("on");
+      $("tabSum").classList.remove("on");
+      $("modeLabel").textContent="넘버스 게임 모드";
+    });
+    $("tabSum").addEventListener("click", ()=>{
+      mode="sum";
+      $("tabSum").classList.add("on");
+      $("tabNumbers").classList.remove("on");
+      $("modeLabel").textContent="숫자합 게임 모드";
+    });
+
+    $("btnShare").addEventListener("click", async ()=>{
+      const u = new URL(location.href);
+      u.searchParams.set("seed", getSeed());
+      u.searchParams.set("cycle", String(getCycle()));
+      u.searchParams.set("recent", String(getRecentN()));
+      u.searchParams.set("w", String(getW()));
+      u.searchParams.set("spread", String(getSpread()));
+      u.searchParams.set("preset", getPreset());
+      u.searchParams.set("pick", String(getPick()));
+      try{
+        await navigator.clipboard.writeText(u.toString());
+        alert("공유 링크가 복사되었습니다!");
+      }catch{
+        prompt("복사 실패 시 아래 링크를 수동 복사:", u.toString());
+      }
+    });
+
+    // load data
+    try{
+      const res = await fetch("data/speedkeno_draws.json", { cache:"no-cache" });
+      if(!res.ok) throw new Error("HTTP "+res.status);
+      const j = await res.json();
+      draws = Array.isArray(j) ? j : [];
+      allFreq = computeAllFreq();
+
+      if(draws.length){
+        setStatus(true, `OK · 데이터 ${draws.length}건 · 최신 ${draws[draws.length-1].key}`);
+      }else{
+        setStatus(false, "데이터가 없습니다 (Actions 업데이트 필요)");
+      }
+      $("dataInfo").innerHTML =
+        `데이터: <code>data/speedkeno_draws.json</code> (총 <b>${draws.length}</b>건)<br/>
+         최신: <b>${draws.length ? draws[draws.length-1].key : "-"}</b><br/>
+         업데이트: GitHub Actions로 주기 갱신<br/>
+         참고: 과거 빈도 기반 추천은 당첨 보장이 아닙니다.`;
+
+    }catch(e){
+      setStatus(false, "데이터 로딩 실패");
+      $("dataInfo").innerHTML = `<span style="color:var(--warn)">data/speedkeno_draws.json 로딩 실패</span><br/>Actions 업데이트/배포를 확인하세요.`;
+    }
+
+    // BGM scan
+    const tracks = await scanBgmTracks();
+    bgmInit(tracks);
+  }
+
+  init();
+</script>
+</body>
+</html>
