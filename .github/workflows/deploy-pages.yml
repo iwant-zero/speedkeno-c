@@ -55,7 +55,7 @@ jobs:
             mkdir -p dist/data
             cp -r data/* dist/data/ || true
           else
-            echo "WARN: data/ not found (site will show '데이터 없음')"
+            echo "WARN: data/ not found"
           fi
 
           # 3) assets 복사 (BGM 포함)
