@@ -1,0 +1,8 @@
+{
+  "updatedAt": "",
+  "totalDraws": 0,
+  "sum": { "min": 0, "max": 0, "avg": 0, "digitFreq": [0,0,0,0,0,0,0,0,0,0], "oddEven": { "odd": 0, "even": 0 }, "underOver": { "under": 0, "over": 0 } },
+  "numberFreq": {},
+  "luckyFreq": {},
+  "recent": {}
+}
