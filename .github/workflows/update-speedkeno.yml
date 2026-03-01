@@ -2,7 +2,7 @@ name: Update SpeedKeno Data
 
 on:
   schedule:
-    - cron: "*/10 * * * *"   # 10분마다 (GitHub cron은 UTC 기준)
+    - cron: "*/5 * * * *"   # 5분마다(UTC 기준)
   workflow_dispatch:
 
 permissions:
