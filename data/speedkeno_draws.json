@@ -151408,5 +151408,47 @@
       "sumOddEven": 1,
       "sumUnderOver": 2
     }
+  },
+  {
+    "key": "20260315-96",
+    "id": 2603150096,
+    "date": "20260315",
+    "round": 96,
+    "gameType": "dhlottery.co.kr",
+    "dhRound": 1520902,
+    "resultImage": "https://files.bepick.net/keno/2026/03/keno_result_1520902.png",
+    "numbers": [
+      16,
+      43,
+      2,
+      18,
+      25,
+      32,
+      29,
+      30,
+      1,
+      36,
+      8,
+      14,
+      66,
+      3,
+      57,
+      50,
+      59,
+      42,
+      58,
+      44,
+      6,
+      37
+    ],
+    "lucky": 37,
+    "sum": 676,
+    "sumBin": "b6",
+    "meta": {
+      "luckyOddEven": 1,
+      "luckyUnderOver": 2,
+      "sumOddEven": 2,
+      "sumUnderOver": 2
+    }
   }
 ]
